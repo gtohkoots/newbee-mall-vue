@@ -7,12 +7,12 @@
  * 版权所有，侵权必究！
  */
 
- import axios from '../utils/axios'
-
- export function addCart(params) {
-     return axios.post('/shop-cart', params);
- }
-
- export function getCart(params) {
-     return axios.get('/shop-cart', {params});
- }
+import { getCart } from "../service/cart";
+export default {
+    async updateCart(ctx) {
+        const { data }  = await getCart();
+        ctx.commit('addCart', {
+            count: data.length || 0
+        })
+    }
+}

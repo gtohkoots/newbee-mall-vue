@@ -42,7 +42,7 @@
 import sHeader from "../components/SimpleHeader.vue"
 import { getDetail } from "../service/good"
 import { Toast } from "vant"
-import { addCart } from "../service/cart"
+import { addCart, getCart } from "../service/cart"
 export default {
     data() {
         return {
@@ -68,6 +68,7 @@ export default {
         if (resultCode == 200) {
           Toast.success("添加成功!");
         }
+        console.log(await getCart());
         this.$store.dispatch('updateCart');
       },
       async goToCart() {
@@ -76,6 +77,11 @@ export default {
           Toast.success("添加成功!");
         }
         this.$store.dispatch('updateCart');
+      }
+    },
+    computed: {
+      count() {
+        return this.$store.state.cartCount
       }
     }
     
