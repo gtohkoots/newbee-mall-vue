@@ -41,6 +41,8 @@
 <script>
 import sHeader from "../components/SimpleHeader.vue"
 import { getDetail } from "../service/good"
+import { Toast } from "vant"
+import { addCart } from "../service/cart"
 export default {
     data() {
         return {
@@ -56,7 +58,25 @@ export default {
         const { id } = this.$route.params
         const { data } = await getDetail(id);
         this.detail = data;
-        console.log(this.detail);
+    },
+    methods: {
+      goTo() {
+        this.$router.push({ path:'/cart' });
+      },
+      async addCart() {
+        const { resultCode } = await addCart({ goodsCount: 1, goodsId: this.detail.goodsId });
+        if (resultCode == 200) {
+          Toast.success("添加成功!");
+        }
+        this.$store.dispatch('updateCart');
+      },
+      async goToCart() {
+        const { resultCode } = await addCart({ goodsCount: 1, goodsId: this.detail.goodsId });
+        if (resultCode == 200) {
+          Toast.success("添加成功!");
+        }
+        this.$store.dispatch('updateCart');
+      }
     }
     
 }

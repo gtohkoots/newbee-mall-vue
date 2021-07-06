@@ -30,7 +30,7 @@
 <script>
 import { Toast } from 'vant'
 import sHeader from '../components/SimpleHeader.vue'
-import { addAddress } from '../service/address'
+import { addAddress, deleteAddress, editAddress, getAddressDetail } from '../service/address'
 import { tdist } from '../common/js/utils'
 export default {
     components: {
@@ -69,6 +69,36 @@ export default {
         this.addressId = addressId
         this.type = type
         this.from = from || ''
+        if (type == 'edit') {
+          const address = (await getAddressDetail(addressId)).data;
+          let _areaCode = ''
+          const province = tdist.getLev1()
+          Object.entries(this.areaList.county_list).forEach(([id, text]) => {
+            // 先找出当前对应的区
+            if (text == address.regionName) {
+              // 找到区对应的几个省份
+              const provinceIndex = province.findIndex(item => item.id.substr(0, 2) == id.substr(0, 2))
+              // 找到区对应的几个市区
+              // eslint-disable-next-line no-unused-vars
+              const cityItem = Object.entries(this.areaList.city_list).filter(([cityId, cityName]) => cityId.substr(0, 4) == id.substr(0, 4))[0]
+              // 对比找到的省份和接口返回的省份是否相等，因为有一些区会重名
+              if (province[provinceIndex].text == address.provinceName && cityItem[1] == address.cityName) {
+                _areaCode = id
+              }
+            }
+          })
+          this.addressInfo = {
+            id: address.addressId,
+            name: address.userName,
+            tel: address.userPhone,
+            province: address.provinceName,
+            city: address.cityName,
+            county: address.regionName,
+            addressDetail: address.detailAddress,
+            areaCode: _areaCode,
+            isDefault: !!address.defaultFlag
+          }
+        }
     },
     methods: {
         async onSave(content) {
@@ -81,7 +111,6 @@ export default {
             detailAddress: content.addressDetail,
             defaultFlag: content.isDefault ? 1 : 0,
           }   
-          console.log(params); 
           if (this.type == 'add') {
               const { resultCode } = await addAddress(params);
               if( resultCode == 200) {
@@ -94,6 +123,31 @@ export default {
                   this.$router.push({path:`/address?from=${this.from}`});
               },1000)
           }
+          else if (this.type == 'edit') {
+              params['addressId'] = this.addressId;
+              const { resultCode } = await editAddress(params);
+              if( resultCode == 200) {
+                Toast.success('更新成功!');
+              }
+              else {
+                Toast.fail('更新失败!');
+              }
+              setTimeout(() => {
+                  this.$router.push({path:`/address?from=${this.from}`});
+              },1000)
+          }
+        },
+        async onDelete() {
+          const { resultCode } = await deleteAddress(this.addressId);
+          if( resultCode == 200 ) {
+            Toast.success("删除成功!");
+          }
+          else {
+            Toast.fail("删除失败!");
+          }
+          setTimeout(() => {
+            this.$router.push({path:`/address?from=${this.from}`});
+          },1000)
         }
     }
     

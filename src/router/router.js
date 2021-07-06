@@ -8,6 +8,7 @@ import ProductList from '../views/ProductList'
 import ProductDetail from '../views/ProductDetail'
 import Address from  '../views/Address'
 import AddressEdit from '../views/AddressEdit'
+import CreateOrder from '../views/CreateOrder'
 
 
 const router = createRouter({ 
@@ -87,6 +88,14 @@ const router = createRouter({
       component:AddressEdit,
       meta: {
         index: 3
+      }
+    },
+    {
+      path:'/create-order',
+      name:'create-order',
+      component: CreateOrder,
+      meta: {
+        index: 2
       }
     }
   ]

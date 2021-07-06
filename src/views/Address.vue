@@ -50,7 +50,6 @@ export default {
     },
     async mounted() {
         const data = (await getAddress()).data;
-        console.log(data);
         this.list = data.map(item => {
         return {
             id: item.addressId,
@@ -68,6 +67,9 @@ export default {
       onEdit(item) {
         this.$router.push({ path: `address-edit`, query:{ type:'edit',addressId:`${item.id}`,from:`${this.from}`} })
       },
+      select(item) {
+        this.$router.push({ path: `create-order`, query:{ addressId:`${item.id}`,from:`${this.from}`} })
+      }
     }
     
 }
