@@ -9,22 +9,22 @@
 
  import axios from '../utils/axios'
 
- export function addCart(params) {
-     return axios.post('/shop-cart', params);
+ export function saveOrder(param) {
+     return axios.post('/saveOrder', param);
  }
 
- export function getCart(params) {
-     return axios.get('/shop-cart', {params});
+ export function getOrderList(params) {
+     return axios.get('/order', { params });
  }
 
- export function deleteCart(id) {
-     return axios.delete('/shop-cart/'+id);
+ export function payOrder(params) {
+     return axios.get('/paySuccess', { params });
  }
 
- export function modifyCart(params) {
-     return axios.put('/shop-cart', params);
+ export function getOrderDetail(id) {
+     return axios.get('/order/'+id);
  }
 
- export function getByCartItemIds(params) {
-     return axios.get('/shop-cart/settle', {params})
+ export function cancelOrder(id) {
+     return axios.put(`/order/${id}/cancel`);
  }

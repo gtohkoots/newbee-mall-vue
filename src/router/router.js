@@ -9,6 +9,9 @@ import ProductDetail from '../views/ProductDetail'
 import Address from  '../views/Address'
 import AddressEdit from '../views/AddressEdit'
 import CreateOrder from '../views/CreateOrder'
+import Cart from '../views/Cart'
+import Order from '../views/Order'
+import OrderDetail from '../views/OrderDetail'
 
 
 const router = createRouter({ 
@@ -91,12 +94,30 @@ const router = createRouter({
       }
     },
     {
+      path:'/cart',
+      name:'cart',
+      component: Cart,
+      meta: {
+        index: 1
+      }
+    },
+    {
       path:'/create-order',
       name:'create-order',
       component: CreateOrder,
       meta: {
         index: 2
       }
+    },
+    {
+      path:'/order',
+      name:'order',
+      component: Order
+    },
+    {
+      path:'/order-detail',
+      name:'order-detail',
+      component: OrderDetail
     }
   ]
 })

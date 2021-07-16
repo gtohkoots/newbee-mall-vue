@@ -1,3 +1,4 @@
+/* eslint-disable vue/valid-v-model */
 <!--
  * 严肃声明：
  * 开源版本请务必保留此注释头信息，若删除我方将保留所有法律责任追究！
@@ -23,7 +24,7 @@
         </div>
         <div class="good">
             <div class="good-item" v-for="(item, index) in cartList" :key="index">
-                <div class="good-img"><img :src="prefix(item.goodsCoverImg)" alt=""></div>
+                <div class="good-img"><img :src="$filters.prefix(item.goodsCoverImg)" alt=""></div>
                 <div class="good-desc">
                 <div class="good-title">
                     <span>{{ item.goodsName }}</span>
@@ -42,17 +43,15 @@
             </div>
             <van-button @click="createOrder" class="pay-btn" color="#1baeae" type="primary" block>生成订单</van-button>
         </div>
-        <van-popup
-        closeable
-        :close-on-click-overlay="false"
-        v-model="showPay"
+        <!-- eslint-disable-next-line vue/valid-v-model -->
+        <van-popup closeable :close-on-click-overlay="false" v-model:show="showPay"
         position="bottom"
         :style="{ height: '30%' }"
         @close="close"
         >
             <div :style="{ width: '90%', margin: '0 auto', padding: '50px 0' }">
-                <van-button :style="{ marginBottom: '10px' }" color="#1989fa" block @click="payOrder(1)">支付宝支付</van-button>
-                <van-button color="#4fc08d" block @click="payOrder(2)">微信支付</van-button>
+              <van-button :style="{ marginBottom: '10px' }" color="#1989fa" block @click="handlePayOrder(1)">支付宝支付</van-button>
+              <van-button color="#4fc08d" block @click="handlePayOrder(2)">微信支付</van-button>
             </div>
         </van-popup>
     </div>    
@@ -62,6 +61,9 @@
 import sHeader from '../components/SimpleHeader.vue'
 import { Toast } from 'vant'
 import { getDefaultAddress, getAddressDetail } from '../service/address'
+import { getByCartItemIds } from  '../service/cart'
+import { saveOrder, payOrder } from '../service/order'
+import { setLocal } from '../common/js/utils'
 export default {
     components: {
         sHeader
@@ -81,15 +83,57 @@ export default {
     methods: {
         async init() {
             Toast.loading({ message: '加载中...', forbidClick: true });
-            const { addressId } = this.$route.query;
+            const { addressId, cartItemId } = this.$route.query;
+            const _cartItemId = JSON.parse(cartItemId);
             const { data:address } = addressId ? await getAddressDetail(addressId) : await getDefaultAddress();
+            const { data:list } = await getByCartItemIds({cartItemId: _cartItemId.join(',')});
             if (!address) {
+                setTimeout(() => {
+                    Toast.success({message: '并未返回地址,将跳转至地址页面'});
+                }, 1000);
                 this.$router.push({ path:'address' });
                 return
             }
             this.address = address;
+            this.cartList = list;
             Toast.clear();
+        },
+        async createOrder() {
+          const param = {
+            addressId: this.address.addressId,
+            cartItemIds: this.cartList.map(item => item.cartItemId)
+          }
+          const {data} = await saveOrder(param);
+          console.log(data);
+          this.orderNo = data;
+          this.showPay = true;
+        },
+        deleteLocal() {
+          setLocal('cartItemIds','');
+        },
+        async handlePayOrder(type) {
+          Toast.loading({ message: '支付中...', forbidClick: true });
+          const { resultCode } = await payOrder({orderNo: this.orderNo, payType: type});
+          if (resultCode == 200) {
+            Toast.success({ message: '支付成功'});
+            this.$router.push({path:'/order'});
+          }
+          else {
+            Toast.fail({ message: '支付失败'});
+          }
+        },
+        close() {
+          this.$router.push({path:'/order'});
         }
+    },
+    computed: {
+      total() {
+        let sum  = 0;
+        this.cartList.forEach(item => {
+          sum += item.goodsCount * item.sellingPrice;
+        });
+        return sum;
+      }
     }
     
 }
